@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THOR: The Lightning Realm</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cinzel', 'Times New Roman', serif;
+            user-select: none;
+        }
+        
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at center, #111111 0%, #000000 70%);
+        }
+        
+        /* Header with username THOR */
+        .header {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(0, 0, 0, 0.7);
+            border-bottom: 2px solid #fff;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            color: #fff;
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 5px #fff);
+            animation: pulse 2s infinite alternate;
+        }
+        
+        .username {
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .stats {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+        
+        /* Main game area */
+        .game-area {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Canvas for game rendering */
+        #gameCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* Controls panel */
+        .controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            border-top: 1px solid #333;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 15px 30px;
+            margin: 0 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 5px;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Level indicator */
+        .level-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 1px solid #fff;
+            z-index: 10;
+            text-align: center;
+        }
+        
+        .level-title {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .level-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        /* Lightning charge bar */
+        .charge-container {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 10;
+        }
+        
+        .charge-label {
+            text-align: center;
+            margin-bottom: 5px;
+            color: #fff;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+        
+        .charge-bar {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .charge-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #333, #fff);
+            transition: width 0.3s;
+        }
+        
+        /* Tutorial overlay */
+        .tutorial {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #fff;
+            z-index: 100;
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+        }
+        
+        .tutorial h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .tutorial p {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+        
+        .tutorial-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        
+        .tutorial-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Game over screen */
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid #fff;
+            z-index: 100;
+            width: 70%;
+            max-width: 600px;
+            text-align: center;
+            display: none;
+        }
+        
+        .game-over h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .game-over p {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+        
+        .final-score {
+            font-size: 2.5rem;
+            color: #fff;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        /* Storm effects overlay */
+        .storm-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.3;
+        }
+        
+        .rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10 L10 20' stroke='white' stroke-width='1' opacity='0.3'/%3E%3C/svg%3E");
+            animation: rain 0.5s linear infinite;
+        }
+        
+        /* Lightning flash effect */
+        .lightning-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0);
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        /* Particles container */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+        
+        @keyframes rain {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100px; }
+        }
+        
+        @keyframes flash {
+            0% { background: rgba(255, 255, 255, 0); }
+            10% { background: rgba(255, 255, 255, 0.9); }
+            20% { background: rgba(255, 255, 255, 0); }
+            100% { background: rgba(255, 255, 255, 0); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .header {
+                padding: 15px 20px;
+            }
+            
+            .username {
+                font-size: 2rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .control-btn {
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .stats {
+                gap: 15px;
+            }
+            
+            .tutorial, .game-over {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with username -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="username">THOR</div>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="score">0</div>
+                    <div class="stat-label">SCORE</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="streak">0</div>
+                    <div class="stat-label">STREAK</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="accuracy">100%</div>
+                    <div class="stat-label">ACCURACY</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main game area -->
+        <div class="game-area">
+            <canvas id="gameCanvas"></canvas>
+            
+            <!-- Level indicator -->
+            <div class="level-indicator">
+                <div class="level-title">REALM</div>
+                <div class="level-number" id="level">1</div>
+            </div>
+            
+            <!-- Lightning charge bar -->
+            <div class="charge-container">
+                <div class="charge-label">LIGHTNING CHARGE</div>
+                <div class="charge-bar">
+                    <div class="charge-fill" id="chargeFill"></div>
+                </div>
+            </div>
+            
+            <!-- Tutorial overlay -->
+            <div class="tutorial" id="tutorial">
+                <h2>THOR: THE LIGHTNING REALM</h2>
+                <p>You are THOR, the God of Thunder. Command the lightning to strike your enemies!</p>
+                <p><i class="fas fa-mouse-pointer"></i> AIM with your mouse</p>
+                <p><i class="fas fa-mouse"></i> CLICK to charge lightning</p>
+                <p><i class="fas fa-hand-pointer"></i> RELEASE to strike</p>
+                <p>Destroy the glowing runes to score points. Chain strikes for higher combos!</p>
+                <p>Each realm becomes more challenging with faster, moving targets.</p>
+                <button class="tutorial-btn" id="startBtn">BEGIN YOUR ASCENSION</button>
+            </div>
+            
+            <!-- Game over screen -->
+            <div class="game-over" id="gameOver">
+                <h2>REALM CONQUERED</h2>
+                <p>Your lightning power has been exhausted</p>
+                <div class="final-score" id="finalScore">0</div>
+                <p>Targets destroyed: <span id="targetsDestroyed">0</span></p>
+                <p>Highest streak: <span id="highestStreak">0</span></p>
+                <p>Accuracy: <span id="finalAccuracy">100%</span></p>
+                <button class="tutorial-btn" id="restartBtn">ASCEND AGAIN</button>
+            </div>
+            
+            <!-- Visual effects -->
+            <div class="storm-overlay">
+                <div class="rain"></div>
+            </div>
+            <div class="lightning-flash" id="lightningFlash"></div>
+            <div class="particles" id="particlesContainer"></div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="controls">
+            <button class="control-btn" id="powerBtn">
+                <i class="fas fa-bolt"></i> CHARGE LIGHTNING
+            </button>
+            <button class="control-btn" id="specialBtn">
+                <i class="fas fa-star"></i> CHAIN LIGHTNING
+            </button>
+            <button class="control-btn" id="pauseBtn">
+                <i class="fas fa-pause"></i> PAUSE
+            </button>
+        </div>
+    </div>
+
+    <!-- Audio elements for sound effects -->
+    <audio id="thunderSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-thunder-strike-1092.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="lightningSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="chargeSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="explosionSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-explosion-2759.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="backgroundSound" loop preload="auto">
+        <source src="https://assets.mixkit.co/music/preview/mixkit-driving-ambition-32.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="levelUpSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Game state variables
+        const gameState = {
+            score: 0,
+            streak: 0,
+            maxStreak: 0,
+            level: 1,
+            targetsDestroyed: 0,
+            shotsFired: 0,
+            shotsHit: 0,
+            isCharging: false,
+            chargeLevel: 0,
+            isPlaying: false,
+            isPaused: false,
+            gameTime: 0,
+            targets: [],
+            particles: [],
+            lightningBolts: [],
+            specialAvailable: false,
+            specialCharges: 0,
+            mouseX: 0,
+            mouseY: 0
+        };
+
+        // DOM Elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const tutorial = document.getElementById('tutorial');
+        const gameOverScreen = document.getElementById('gameOver');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const powerBtn = document.getElementById('powerBtn');
+        const specialBtn = document.getElementById('specialBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const scoreElement = document.getElementById('score');
+        const streakElement = document.getElementById('streak');
+        const accuracyElement = document.getElementById('accuracy');
+        const levelElement = document.getElementById('level');
+        const chargeFill = document.getElementById('chargeFill');
+        const lightningFlash = document.getElementById('lightningFlash');
+        const particlesContainer = document.getElementById('particlesContainer');
+        const finalScoreElement = document.getElementById('finalScore');
+        const targetsDestroyedElement = document.getElementById('targetsDestroyed');
+        const highestStreakElement = document.getElementById('highestStreak');
+        const finalAccuracyElement = document.getElementById('finalAccuracy');
+
+        // Audio elements
+        const thunderSound = document.getElementById('thunderSound');
+        const lightningSound = document.getElementById('lightningSound');
+        const chargeSound = document.getElementById('chargeSound');
+        const explosionSound = document.getElementById('explosionSound');
+        const backgroundSound = document.getElementById('backgroundSound');
+        const levelUpSound = document.getElementById('levelUpSound');
+
+        // Initialize canvas size
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        // Initialize game
+        function initGame() {
+            // Reset game state
+            gameState.score = 0;
+            gameState.streak = 0;
+            gameState.maxStreak = 0;
+            gameState.level = 1;
+            gameState.targetsDestroyed = 0;
+            gameState.shotsFired = 0;
+            gameState.shotsHit = 0;
+            gameState.isCharging = false;
+            gameState.chargeLevel = 0;
+            gameState.isPlaying = true;
+            gameState.isPaused = false;
+            gameState.gameTime = 0;
+            gameState.targets = [];
+            gameState.particles = [];
+            gameState.lightningBolts = [];
+            gameState.specialAvailable = false;
+            gameState.specialCharges = 0;
+            
+            // Update UI
+            updateUI();
+            
+            // Hide tutorial and game over screens
+            tutorial.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            
+            // Start background music
+            backgroundSound.volume = 0.3;
+            backgroundSound.play().catch(e => console.log("Audio play failed:", e));
+            
+            // Create initial targets
+            createTargets();
+            
+            // Start game loop
+            gameLoop();
+        }
+
+        // Create targets based on current level
+        function createTargets() {
+            gameState.targets = [];
+            
+            // Number of targets increases with level
+            const targetCount = 5 + Math.floor(gameState.level * 1.5);
+            
+            for (let i = 0; i < targetCount; i++) {
+                const size = 30 + Math.random() * 30;
+                const speed = 0.5 + (gameState.level * 0.1) + Math.random() * 1.5;
+                
+                // Create target with random position (avoiding edges)
+                const target = {
+                    x: Math.random() * (canvas.width - size * 2) + size,
+                    y: Math.random() * (canvas.height - size * 2 - 150) + 100,
+                    size: size,
+                    speedX: (Math.random() - 0.5) * speed,
+                    speedY: (Math.random() - 0.5) * speed,
+                    health: 1,
+                    maxHealth: 1,
+                    type: Math.floor(Math.random() * 3), // 0, 1, or 2 for different designs
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.05,
+                    glow: 0,
+                    glowDirection: 1
+                };
+                
+                gameState.targets.push(target);
+            }
+        }
+
+        // Update game UI
+        function updateUI() {
+            scoreElement.textContent = gameState.score;
+            streakElement.textContent = gameState.streak;
+            levelElement.textContent = gameState.level;
+            
+            // Calculate accuracy
+            const accuracy = gameState.shotsFired > 0 ? 
+                Math.round((gameState.shotsHit / gameState.shotsFired) * 100) : 100;
+            accuracyElement.textContent = `${accuracy}%`;
+            
+            // Update charge bar
+            chargeFill.style.width = `${gameState.chargeLevel}%`;
+            
+            // Update special button
+            if (gameState.specialAvailable) {
+                specialBtn.style.background = 'rgba(255, 255, 255, 0.3)';
+                specialBtn.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.7)';
+            } else {
+                specialBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                specialBtn.style.boxShadow = 'none';
+            }
+        }
+
+        // Draw targets
+        function drawTargets() {
+            gameState.targets.forEach(target => {
+                // Update target position
+                target.x += target.speedX;
+                target.y += target.speedY;
+                
+                // Bounce off walls
+                if (target.x - target.size < 0 || target.x + target.size > canvas.width) {
+                    target.speedX *= -1;
+                }
+                if (target.y - target.size < 100 || target.y + target.size > canvas.height - 150) {
+                    target.speedY *= -1;
+                }
+                
+                // Update rotation
+                target.rotation += target.rotationSpeed;
+                
+                // Update glow effect
+                target.glow += 0.05 * target.glowDirection;
+                if (target.glow > 1 || target.glow < 0) {
+                    target.glowDirection *= -1;
+                }
+                
+                // Draw target based on type
+                ctx.save();
+                ctx.translate(target.x, target.y);
+                ctx.rotate(target.rotation);
+                
+                // Glow effect
+                const glowAlpha = 0.3 + target.glow * 0.3;
+                ctx.shadowColor = 'white';
+                ctx.shadowBlur = 15 * target.glow;
+                
+                // Target body (different designs for different types)
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.8 + target.glow * 0.2})`;
+                
+                switch(target.type) {
+                    case 0: // Circle with runes
+                        ctx.beginPath();
+                        ctx.arc(0, 0, target.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Rune markings
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, target.size * 0.7, 0, Math.PI * 2);
+                        ctx.stroke();
+                        
+                        // Inner markings
+                        for (let i = 0; i < 8; i++) {
+                            const angle = (Math.PI * 2 / 8) * i;
+                            ctx.beginPath();
+                            ctx.moveTo(
+                                Math.cos(angle) * target.size * 0.3,
+                                Math.sin(angle) * target.size * 0.3
+                            );
+                            ctx.lineTo(
+                                Math.cos(angle) * target.size * 0.7,
+                                Math.sin(angle) * target.size * 0.7
+                            );
+                            ctx.stroke();
+                        }
+                        break;
+                        
+                    case 1: // Square with patterns
+                        ctx.fillRect(-target.size, -target.size, target.size * 2, target.size * 2);
+                        
+                        // Diagonal lines
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(-target.size, -target.size);
+                        ctx.lineTo(target.size, target.size);
+                        ctx.moveTo(target.size, -target.size);
+                        ctx.lineTo(-target.size, target.size);
+                        ctx.stroke();
+                        
+                        // Inner square
+                        ctx.strokeRect(-target.size * 0.6, -target.size * 0.6, target.size * 1.2, target.size * 1.2);
+                        break;
+                        
+                    case 2: // Triangle
+                        ctx.beginPath();
+                        ctx.moveTo(0, -target.size);
+                        ctx.lineTo(target.size * 0.866, target.size * 0.5);
+                        ctx.lineTo(-target.size * 0.866, target.size * 0.5);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // Inner triangle
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(0, -target.size * 0.6);
+                        ctx.lineTo(target.size * 0.866 * 0.6, target.size * 0.5 * 0.6);
+                        ctx.lineTo(-target.size * 0.866 * 0.6, target.size * 0.5 * 0.6);
+                        ctx.closePath();
+                        ctx.stroke();
+                        break;
+                }
+                
+                ctx.restore();
+            });
+        }
+
+        // Draw lightning bolts
+        function drawLightningBolts() {
+            gameState.lightningBolts.forEach((bolt, index) => {
+                // Update bolt lifetime
+                bolt.life -= 1;
+                if (bolt.life <= 0) {
+                    gameState.lightningBolts.splice(index, 1);
+                    return;
+                }
+                
+                // Draw lightning bolt
+                ctx.save();
+                
+                // Set line style for lightning
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                // Draw jagged lightning line
+                ctx.beginPath();
+                ctx.moveTo(bolt.startX, bolt.startY);
+                
+                // Calculate number of segments
+                const dx = bolt.endX - bolt.startX;
+                const dy = bolt.endY - bolt.startY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const segments = Math.max(5, Math.floor(distance / 10));
+                
+                // Create jagged lightning effect
+                for (let i = 1; i <= segments; i++) {
+                    const t = i / segments;
+                    const x = bolt.startX + dx * t;
+                    const y = bolt.startY + dy * t;
+                    
+                    // Add some randomness to create jagged effect
+                    const offset = bolt.life / 20; // Less offset as bolt fades
+                    const randX = (Math.random() - 0.5) * offset * 20;
+                    const randY = (Math.random() - 0.5) * offset * 20;
+                    
+                    ctx.lineTo(x + randX, y + randY);
+                }
+                
+                ctx.stroke();
+                
+                // Add glow effect
+                ctx.strokeStyle = 'rgba(200, 230, 255, 0.4)';
+                ctx.lineWidth = 6;
+                ctx.stroke();
+                
+                ctx.restore();
+            });
+        }
+
+        // Draw particles
+        function drawParticles() {
+            gameState.particles.forEach((particle, index) => {
+                // Update particle
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.life -= 1;
+                
+                // Remove dead particles
+                if (particle.life <= 0) {
+                    gameState.particles.splice(index, 1);
+                    return;
+                }
+                
+                // Draw particle
+                ctx.save();
+                ctx.globalAlpha = particle.life / particle.maxLife;
+                ctx.fillStyle = particle.color;
+                
+                // Different shapes for different particle types
+                if (particle.type === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (particle.type === 'spark') {
+                    ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+                }
+                
+                ctx.restore();
+            });
+        }
+
+        // Create particles for explosion
+        function createExplosion(x, y, color = 'white') {
+            const particleCount = 30 + Math.floor(Math.random() * 20);
+            
+            for (let i = 0; i < particleCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1 + Math.random() * 5;
+                const life = 20 + Math.random() * 30;
+                
+                gameState.particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: 1 + Math.random() * 4,
+                    life: life,
+                    maxLife: life,
+                    color: color,
+                    type: Math.random() > 0.5 ? 'circle' : 'spark'
+                });
+            }
+        }
+
+        // Create lightning strike
+        function createLightning(startX, startY, endX, endY) {
+            // Add lightning bolt
+            gameState.lightningBolts.push({
+                startX: startX,
+                startY: startY,
+                endX: endX,
+                endY: endY,
+                life: 15 // frames
+            });
+            
+            // Visual flash effect
+            lightningFlash.style.animation = 'none';
+            setTimeout(() => {
+                lightningFlash.style.animation = 'flash 0.3s';
+            }, 10);
+            
+            // Screen shake effect
+            document.querySelector('.container').style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                document.querySelector('.container').style.animation = '';
+            }, 500);
+            
+            // Play thunder sound with slight delay
+            setTimeout(() => {
+                thunderSound.currentTime = 0;
+                thunderSound.volume = 0.3;
+                thunderSound.play().catch(e => console.log("Audio play failed:", e));
+            }, 100);
+            
+            // Play lightning sound
+            lightningSound.currentTime = 0;
+            lightningSound.volume = 0.5;
+            lightningSound.play().catch(e => console.log("Audio play failed:", e));
+        }
+
+        // Check for collisions between lightning and targets
+        function checkCollisions(endX, endY) {
+            let hit = false;
+            
+            gameState.targets.forEach((target, index) => {
+                // Calculate distance between lightning end and target center
+                const dx = endX - target.x;
+                const dy = endY - target.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // If lightning hit the target
+                if (distance < target.size) {
+                    hit = true;
+                    
+                    // Reduce target health
+                    target.health -= 1;
+                    
+                    // If target is destroyed
+                    if (target.health <= 0) {
+                        // Remove target
+                        gameState.targets.splice(index, 1);
+                        
+                        // Create explosion
+                        createExplosion(target.x, target.y, 'white');
+                        
+                        // Play explosion sound
+                        explosionSound.currentTime = 0;
+                        explosionSound.volume = 0.4;
+                        explosionSound.play().catch(e => console.log("Audio play failed:", e));
+                        
+                        // Increase score based on streak and charge level
+                        const baseScore = 100;
+                        const streakBonus = gameState.streak * 10;
+                        const chargeBonus = gameState.chargeLevel;
+                        const scoreEarned = baseScore + streakBonus + chargeBonus;
+                        
+                        gameState.score += scoreEarned;
+                        gameState.streak += 1;
+                        gameState.targetsDestroyed += 1;
+                        gameState.shotsHit += 1;
+                        
+                        // Update max streak
+                        if (gameState.streak > gameState.maxStreak) {
+                            gameState.maxStreak = gameState.streak;
+                        }
+                        
+                        // Check for special charge
+                        if (gameState.streak % 5 === 0) {
+                            gameState.specialAvailable = true;
+                            gameState.specialCharges += 1;
+                        }
+                        
+                        // Check if all targets are destroyed
+                        if (gameState.targets.length === 0) {
+                            levelUp();
+                        }
+                    } else {
+                        // Hit but not destroyed - create smaller explosion
+                        createExplosion(target.x, target.y, '#aaa');
+                    }
+                }
+            });
+            
+            return hit;
+        }
+
+        // Level up
+        function levelUp() {
+            gameState.level += 1;
+            
+            // Play level up sound
+            levelUpSound.currentTime = 0;
+            levelUpSound.volume = 0.5;
+            levelUpSound.play().catch(e => console.log("Audio play failed:", e));
+            
+            // Create new targets
+            createTargets();
+        }
+
+        // Game over
+        function gameOver() {
+            gameState.isPlaying = false;
+            
+            // Stop background music
+            backgroundSound.pause();
+            
+            // Update game over screen
+            finalScoreElement.textContent = gameState.score;
+            targetsDestroyedElement.textContent = gameState.targetsDestroyed;
+            highestStreakElement.textContent = gameState.maxStreak;
+            
+            const accuracy = gameState.shotsFired > 0 ? 
+                Math.round((gameState.shotsHit / gameState.shotsFired) * 100) : 100;
+            finalAccuracyElement.textContent = `${accuracy}%`;
+            
+            // Show game over screen
+            gameOverScreen.style.display = 'block';
+        }
+
+        // Main game loop
+        function gameLoop() {
+            if (!gameState.isPlaying || gameState.isPaused) return;
+            
+            // Update game time
+            gameState.gameTime += 1;
+            
+            // Clear canvas with fade effect for trailing
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background elements
+            drawBackground();
+            
+            // Draw game elements
+            drawTargets();
+            drawLightningBolts();
+            drawParticles();
+            
+            // Draw aiming reticle if charging
+            if (gameState.isCharging) {
+                drawReticle();
+            }
+            
+            // Update UI
+            updateUI();
+            
+            // Continue game loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Draw background elements
+        function drawBackground() {
+            // Draw storm clouds
+            ctx.fillStyle = 'rgba(30, 30, 30, 0.7)';
+            
+            // Draw multiple cloud layers
+            for (let i = 0; i < 5; i++) {
+                const timeOffset = gameState.gameTime * 0.01 * (i + 1);
+                const cloudY = 50 + i * 40;
+                const cloudWidth = canvas.width;
+                const cloudHeight = 60 + i * 10;
+                
+                ctx.beginPath();
+                for (let x = 0; x < cloudWidth; x += 20) {
+                    const y = cloudY + Math.sin(x * 0.02 + timeOffset) * 10;
+                    const height = cloudHeight + Math.cos(x * 0.015 + timeOffset) * 20;
+                    
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                    
+                    ctx.lineTo(x, y + height);
+                }
+                
+                ctx.lineTo(cloudWidth, canvas.height);
+                ctx.lineTo(0, canvas.height);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // Draw distant lightning flashes occasionally
+            if (Math.random() < 0.005) {
+                const flashX = Math.random() * canvas.width;
+                const flashWidth = 100 + Math.random() * 200;
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.fillRect(flashX, 0, flashWidth, canvas.height * 0.3);
+            }
+        }
+
+        // Draw aiming reticle
+        function drawReticle() {
+            const charge = gameState.chargeLevel;
+            const reticleSize = 20 + charge * 0.5;
+            
+            ctx.save();
+            ctx.translate(gameState.mouseX, gameState.mouseY);
+            
+            // Outer circle
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 + charge/200})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, reticleSize, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Inner circle
+            ctx.beginPath();
+            ctx.arc(0, 0, reticleSize * 0.5, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Crosshairs
+            ctx.beginPath();
+            ctx.moveTo(-reticleSize, 0);
+            ctx.lineTo(reticleSize, 0);
+            ctx.moveTo(0, -reticleSize);
+            ctx.lineTo(0, reticleSize);
+            ctx.stroke();
+            
+            // Charge indicator
+            const chargeAngle = (charge / 100) * Math.PI * 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, reticleSize * 0.7, 0, chargeAngle);
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+
+        // Handle mouse movement
+        function handleMouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            gameState.mouseX = e.clientX - rect.left;
+            gameState.mouseY = e.clientY - rect.top;
+        }
+
+        // Handle mouse down (start charging)
+        function handleMouseDown() {
+            if (!gameState.isPlaying || gameState.isPaused) return;
+            
+            gameState.isCharging = true;
+            
+            // Play charge sound
+            chargeSound.currentTime = 0;
+            chargeSound.volume = 0.3;
+            chargeSound.play().catch(e => console.log("Audio play failed:", e));
+            
+            // Start charge interval
+            const chargeInterval = setInterval(() => {
+                if (gameState.isCharging && gameState.chargeLevel < 100) {
+                    gameState.chargeLevel += 1;
+                    updateUI();
+                } else {
+                    clearInterval(chargeInterval);
+                }
+            }, 30);
+        }
+
+        // Handle mouse up (fire lightning)
+        function handleMouseUp() {
+            if (!gameState.isPlaying || !gameState.isCharging || gameState.isPaused) return;
+            
+            // Fire lightning from top of screen to mouse position
+            const startX = gameState.mouseX;
+            const startY = 0;
+            const endX = gameState.mouseX + (Math.random() - 0.5) * 20; // Add slight randomness
+            const endY = gameState.mouseY;
+            
+            // Create lightning
+            createLightning(startX, startY, endX, endY);
+            
+            // Check for collisions
+            const hit = checkCollisions(endX, endY);
+            
+            // Update game stats
+            gameState.shotsFired += 1;
+            
+            if (!hit) {
+                // Miss - reset streak
+                gameState.streak = 0;
+            }
+            
+            // Reset charging state
+            gameState.isCharging = false;
+            gameState.chargeLevel = 0;
+            
+            // Update UI
+            updateUI();
+        }
+
+        // Handle special ability (chain lightning)
+        function handleSpecial() {
+            if (!gameState.isPlaying || gameState.isPaused || !gameState.specialAvailable) return;
+            
+            // Use special ability
+            gameState.specialAvailable = false;
+            gameState.specialCharges -= 1;
+            
+            // Create multiple lightning strikes
+            const strikeCount = 5;
+            
+            for (let i = 0; i < strikeCount; i++) {
+                setTimeout(() => {
+                    if (!gameState.isPlaying) return;
+                    
+                    // Random position on canvas
+                    const startX = Math.random() * canvas.width;
+                    const startY = 0;
+                    const endX = Math.random() * canvas.width;
+                    const endY = 100 + Math.random() * (canvas.height - 250);
+                    
+                    // Create lightning
+                    createLightning(startX, startY, endX, endY);
+                    
+                    // Check for collisions
+                    checkCollisions(endX, endY);
+                }, i * 200); // Stagger the strikes
+            }
+        }
+
+        // Handle window resize
+        function handleResize() {
+            initCanvas();
+        }
+
+        // Initialize event listeners
+        function initEventListeners() {
+            // Canvas events
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handleMouseDown();
+            });
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                handleMouseUp();
+            });
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                gameState.mouseX = touch.clientX - rect.left;
+                gameState.mouseY = touch.clientY - rect.top;
+            });
+            
+            // Button events
+            startBtn.addEventListener('click', initGame);
+            restartBtn.addEventListener('click', initGame);
+            powerBtn.addEventListener('mousedown', handleMouseDown);
+            powerBtn.addEventListener('mouseup', handleMouseUp);
+            specialBtn.addEventListener('click', handleSpecial);
+            
+            // Pause button
+            pauseBtn.addEventListener('click', () => {
+                if (!gameState.isPlaying) return;
+                
+                gameState.isPaused = !gameState.isPaused;
+                
+                if (gameState.isPaused) {
+                    pauseBtn.innerHTML = '<i class="fas fa-play"></i> RESUME';
+                    backgroundSound.pause();
+                } else {
+                    pauseBtn.innerHTML = '<i class="fas fa-pause"></i> PAUSE';
+                    backgroundSound.play().catch(e => console.log("Audio play failed:", e));
+                    gameLoop();
+                }
+            });
+            
+            // Window events
+            window.addEventListener('resize', handleResize);
+        }
+
+        // Initialize the game when page loads
+        window.addEventListener('load', () => {
+            initCanvas();
+            initEventListeners();
+            
+            // Show tutorial on first load
+            tutorial.style.display = 'block';
+        });
+
+        // Add some CSS for the particles container
+        const style = document.createElement('style');
+        style.textContent = `
+            .particle {
+                position: absolute;
+                border-radius: 50%;
+                background: white;
+                pointer-events: none;
+                z-index: 3;
+            }
+            
+            .spark {
+                position: absolute;
+                background: white;
+                pointer-events: none;
+                z-index: 3;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Create a function to generate random particles for the particle container
+        function createParticleElements() {
+            // Clear existing particles
+            particlesContainer.innerHTML = '';
+            
+            // Create 50 particles for background effect
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = Math.random() > 0.5 ? 'particle' : 'spark';
+                
+                // Random properties
+                const size = Math.random() * 3 + 1;
+                const left = Math.random() * 100;
+                const top = Math.random() * 100;
+                const opacity = Math.random() * 0.5 + 0.1;
+                const animationDuration = Math.random() * 5 + 5;
+                const animationDelay = Math.random() * 5;
+                
+                // Apply styles
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${left}%`;
+                particle.style.top = `${top}%`;
+                particle.style.opacity = opacity;
+                particle.style.animation = `moveParticle ${animationDuration}s linear ${animationDelay}s infinite`;
+                
+                particlesContainer.appendChild(particle);
+            }
+            
+            // Add animation for particles
+            const particleAnimation = document.createElement('style');
+            particleAnimation.textContent = `
+                @keyframes moveParticle {
+                    0% {
+                        transform: translateY(0) translateX(0);
+                        opacity: 0;
+                    }
+                    10% {
+                        opacity: 0.5;
+                    }
+                    90% {
+                        opacity: 0.5;
+                    }
+                    100% {
+                        transform: translateY(-100px) translateX(${Math.random() > 0.5 ? '-' : ''}20px);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(particleAnimation);
+        }
+
+        // Initialize background particles
+        createParticleElements();
+    </script>
+</body>
+</html>
